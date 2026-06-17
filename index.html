@@ -210,7 +210,12 @@
     <div id="quiz-screen">
         <div class="header">
             <h1>주관식 트레이닝</h1>
-            <div class="progress" id="progress-text">1 / 24</div>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:600; color:var(--text-muted);">
+                    <input type="checkbox" id="filter-hidden"> hidden 문제 예상
+                </label>
+                <div class="progress" id="progress-text">0 / 0</div>
+            </div>
         </div>
         
         <div class="professor-tag" id="professor-tag">교수님</div>
@@ -224,11 +229,13 @@
         <div class="answer-section" id="answer-section">
             <div class="answer-title">📝 모범 답안</div>
             <div class="answer-content" id="correct-answer">정답이 여기에 표시됩니다.</div>
+            <div id="auto-grade-result" style="margin-top:12px; font-weight:700;"></div>
             
             <h3 style="margin-top:0; font-size: 1rem; text-align: center; color: var(--text-main);">내 답안과 비교했을 때 어떤가요?</h3>
             <div class="grading-buttons">
                 <button class="btn btn-danger" onclick="gradeAnswer(false)">틀렸어요 😥</button>
                 <button class="btn btn-success" onclick="gradeAnswer(true)">맞았어요! 🥳</button>
+                <button class="btn btn-primary" style="width:auto; padding:10px 14px; margin-left:8px;" onclick="requestGrade()">자동 채점 (AI)</button>
             </div>
         </div>
     </div>
@@ -249,142 +256,9 @@
 </div>
 
 <script>
-    // innerHTML을 사용하므로 \n 대신 <br> 적용 완료
-    const questions = [
-        // 주한별 교수님
-        {
-            professor: "주한별 교수님",
-            question: "(1) Homogeneous coordinate X = [0, 4, 4, 2]로 주어진 3D point를 Euclidean coordinate로 변환하십시오.<br><br>(2) Euclidean coordinate Y = [3, -1, 5] 로 주어진 3D point를 homogeneous coordinate로 변환하십시오.",
-            answer: "(1) 마지막 성분 w=2 로 각 성분을 나누면 [0/2, 4/2, 4/2] = [0, 2, 2]<br><br>(2) 마지막 성분에 1을 추가하면 [3, -1, 5, 1]"
-        },
-        {
-            professor: "주한별 교수님",
-            question: "3D point X = [0, 3, 2]를 다음 camera matrix P로 project할 때, projected 2D point를 inhomogeneous coordinate로 구하십시오.<br><br>P = <br>[  5  -14   2   17 ]<br>[-10   -5 -10   50 ]<br>[ 10    2 -11   19 ]",
-            answer: "X를 homogeneous coordinate로 표현하면 X=[0, 3, 2, 1] 이고, projection matrix를 곱해 얻은 projected point는 PX = [-21, 15, 3]^T 이다.<br><br>이를 inhomogeneous coordinate로 표현하기 위해 마지막 성분(3)으로 나누면 [-7, 5] 이다."
-        },
-        {
-            professor: "주한별 교수님",
-            question: "카메라 projection matrix P는 intrinsic K, extrinsic (R, t)로 구성되어 있습니다. P를 K, R, t를 사용하여 표현하고, P, K, R, t 각각이 무엇을 의미하는지와 그 degree of freedom(자유도)을 서술하시오.",
-            answer: "카메라 projection matrix는 intrinsic과 extrinsic의 곱으로 P = K[R|t] 와 같이 표현되며, 3D world 점을 2D 이미지로 사영한다.<br><br>- K: 카메라 내부 파라미터. 초점거리(fx, fy), 주점(cx, cy), skew(s)의 5개이므로 DOF는 5이다.<br>- R: world에 대한 카메라의 방향(회전). 세 회전각으로 결정되어 DOF는 3이다.<br>- t: 카메라의 3D 위치(이동). 세 성분을 가져 DOF는 3이다.<br>- P: 전체 사영 변환. 3x4=12 원소에서 scale 1개를 빼 DOF는 11이다. (5+3+3=11로 구성요소 자유도 합과 일치)"
-        },
-        {
-            professor: "주한별 교수님",
-            question: "[예상] Homogeneous Coordinates(동차 좌표계)를 사용하는 기하학적/수학적 이점을 설명하고, Homogeneous space에서 두 점을 지나는 선(Line)과 두 선이 만나는 교점(Intersection)을 구하는 관계식을 간단히 서술하시오.",
-            answer: "개념/이점: 무한대 점과 무한대 선을 유한한 숫자로 표현할 수 있게 해주며, 투영 변환 같은 비선형 연산을 행렬 곱셈을 통한 선형 연산으로 간단하게 만들어 줍니다.<br><br>관계/계산:<br>- 선 정의: 두 점 x1과 x2를 지나는 선 l은 외적(Cross product)으로 정의됩니다. (l = x1 × x2)<br>- 교점: 두 선 l1과 l2가 만나는 점 x 역시 외적으로 구해집니다. (x = l1 × l2)"
-        },
-        {
-            professor: "주한별 교수님",
-            question: "[예상] Homography(호모그래피)의 기하학적 개념을 설명하고, 두 이미지 평면 간의 Homography 행렬 H를 구하기 위해 최소 몇 개의 대응점(Point Correspondences)이 필요한지 그 이유와 함께 설명하시오.",
-            answer: "개념: 하나의 평면을 다른 평면으로 투영(Mapping)시키는 변환 행렬입니다. 동일한 평면을 서로 다른 두 카메라 시점에서 바라봤을 때 픽셀 좌표를 연결해주는 모델입니다.<br><br>최소 대응점: Homography 매트릭스 H는 3x3 행렬이지만 scale ambiguity로 인해 자유도(DOF)가 8개입니다. 한 쌍의 매칭점마다 x, y 방향에 대한 2개의 방정식이 나오므로, 8개의 미지수를 구하려면 최소 4쌍의 대응점이 필요합니다."
-        },
-        {
-            professor: "주한별 교수님",
-            question: "[예상] 카메라 Projection Matrix의 구성 요소인 Intrinsic Parameters(내부 파라미터)와 Extrinsic Parameters(외부 파라미터)가 각각 카메라의 어떤 물리적/기하학적 속성을 나타내는지 구분하여 설명하시오.",
-            answer: "Extrinsic Parameters [R|t]: 월드 좌표계에서 카메라 좌표계로 변환하는 회전(R)과 평행이동(t) 행렬입니다. 즉, 월드 상에서 카메라가 어디에 위치하고 어느 방향을 보고 있는지를 나타냅니다.<br><br>Intrinsic Parameters (K): 카메라 좌표계의 3D 점을 2D 이미지 픽셀로 변환하는 요소입니다. 카메라 렌즈와 센서의 고유한 물리적 특성인 초점 거리(Focal length), 주점(Principal point), 스큐(Skew) 등을 포함합니다."
-        },
-        {
-            professor: "주한별 교수님",
-            question: "[예상] 월드 좌표계의 3D 점이 카메라 렌즈를 거쳐 2D 이미지의 픽셀로 투영되는 전체 과정을 수식 x = PX 를 기반으로 설명하고, 마지막 단계에서 실제 2D 픽셀 좌표를 얻기 위해 homogenous 벡터에서 어떤 추가 연산이 필요한지 서술하시오.",
-            answer: "과정 설명:<br>1. 월드 좌표의 3D 점 X가 외부 파라미터 행렬 [R|t]와 곱해져 카메라 기준 3D 좌표로 변환됨.<br>2. 그 후 내부 파라미터 K와 곱해져 3x1 형태의 homogenous 2D 점 좌표 x~ = (u', v', w')^T 로 투영됨.<br><br>추가 연산 (Perspective division):<br>얻어진 결과는 동차 좌표계 형태이므로, 실제 유클리디안 2D 픽셀 좌표 (u, v)를 얻기 위해서는 벡터의 각 요소를 마지막 차원인 w'(일반적으로 깊이값 Z)로 나누어주는 과정이 필수적입니다. (u = u'/w', v = v'/w')"
-        },
-
-        // 하순회 교수님
-        {
-            professor: "하순회 교수님",
-            question: "이종 병렬 시스템으로 구현되는 임베디드 시스템에서 딥러닝 SW를 최적화하기 위해 다음 기법이 추구하는 목표를 간략히 설명하여라.<br><br>(1) Quantization<br>(2) Pruning<br>(3) Network parallelization",
-            answer: "(1) Quantization: 모델의 정확도를 유지하면서 데이터를 표현하는 비트수를 최대로 줄임으로 해서 메모리 사용량을 줄이고자 함. 프로세서가 적은 비트 연산을 지원하면 수행 시간도 줄이는 효과를 얻음.<br><br>(2) Pruning: 딥러닝 응용이 redundant 한 연산을 수행하고 있기 때문에 수행하는 연산의 개수를 줄임으로 해서 수행 시간을 줄이고자 함.<br><br>(3) Parallelization: 모델의 병렬화를 통해 가용한 프로세서(CPU, GPU, NPU)의 효율을 최대로 높임으로 해서 실시간 성능을 극대화함 (처리량 증가, 지연시간 단축)."
-        },
-        {
-            professor: "하순회 교수님",
-            question: "입력 feature map의 크기가 100x100x100 이다. 커널 크기가 3x3인 필터 100개를 적용하는 convolution layer에 대하여 다음을 구하라. (패딩을 통해 입력과 출력 크기는 같다)<br><br>(1) 이 모델을 수행하기 위해 필요한 MAC 연산의 개수는?<br>(2) Bottleneck 구조(1x1 50개 -> 3x3 50개 -> 1x1 100개 순차 적용)를 사용할 경우 MAC 연산 수는?<br>(3) Depthwise (3x3) + Pointwise (1x1) convolution을 사용할 경우 MAC 연산 수는?",
-            answer: "(1) MAC 수: 100 x 100 x 100 x 3 x 3 x 100 = 9.0 x 10^8<br><br>(2) 100x100x100x1x1x50 + 100x100x50x3x3x50 + 100x100x50x1x1x100<br>= (0.5 + 2.25 + 0.5) x 10^8 = 3.25 x 10^8<br><br>(3) 100x100x3x3x100 (Depthwise) + 100x100x100x1x1x100 (Pointwise)<br>= (0.09 + 1.0) x 10^8 = 1.09 x 10^8<br><br>💡 <b>공통 공식:</b> MAC 연산 수 = (출력 가로 × 출력 세로) × (커널 가로 × 커널 세로) × 입력 채널 수 × 출력 채널(필터) 수<br><br><b>(1) 일반 Convolution</b><br>• 연산식: (100 × 100) × (3 × 3) × 100 × 100 <br>• 계산: 10,000 × 9 × 10,000 = 900,000,000<br>• <b>정답: 9.0 × 10^8</b> <br><br><b>(2) Bottleneck 구조 (총 3단계 연산의 합)</b><br>• 1단계 (1x1, 50개): (100 × 100) × (1 × 1) × 100 × 50 = 50,000,000 (0.5 × 10^8)<br>• 2단계 (3x3, 50개): (100 × 100) × (3 × 3) × 50 × 50 = 225,000,000 (2.25 × 10^8) <br>• 3단계 (1x1, 100개): (100 × 100) × (1 × 1) × 50 × 100 = 50,000,000 (0.5 × 10^8) <br>• <b>정답: (0.5 + 2.25 + 0.5) × 10^8 = 3.25 × 10^8</b><br><br><b>(3) Depthwise + Pointwise Convolution</b><br>• Depthwise (채널별 독립 연산): (100 × 100) × (3 × 3) × 100 = 9,000,000 (0.09 × 10^8)  ※ 다른 채널과 섞이지 않으므로 입력 채널(100) 한 번만 곱해짐<br>• Pointwise (1x1, 100개): (100 × 100) × (1 × 1) × 100 × 100 = 100,000,000 (1.0 × 10^8)<br>• <b>정답: (0.09 + 1.0) × 10^8 = 1.09 × 10^8</b>"
-        },
-        {
-            professor: "하순회 교수님",
-            question: "Hardware-aware NAS (Neural Architecture Search)는 최적화된 네트워크 모델을 자동 탐색하는 기술로 3가지 요소로 구성되어 있다. 3가지 구성 요소(a, b, c)가 무엇인지 간략히 설명하여라.<br><br><img src='ha_3.png'>",
-            answer: "(a) Search space (탐색 공간): 탐색할 네트워크 모델의 종류와 크기를 결정<br>(b) Search strategy (탐색 방법): 탐색 공간을 어떻게 탐색하는 지에 대한 방법 결정<br>(c) Performance estimation strategy (성능 예측 방법): 각 대상 모델의 성능을 예측하는 방법 결정"
-        },
-
-        // 한보형 교수님
-        {
-            professor: "한보형 교수님",
-            question: "R-CNN 보다 Fast R-CNN 이 빠른 이유를 서술하시오.",
-            answer: "R-CNN은 region proposal 마다 CNN을 개별 실행(~2,000 회)하지만, Fast R-CNN은 이미지 전체를 CNN에 한 번만 통과시켜 feature map 을 생성한 뒤 RoI Pooling 으로 각 영역의 특징을 추출한다.<br>따라서 CNN 연산 횟수를 대폭 줄여 속도가 크게 향상된다."
-        },
-        {
-            professor: "한보형 교수님",
-            question: "RetinaNet 에서 사용된 Focal Loss 의 수식은 FL(pt) = -(1-pt)^γ * log(pt) 이다.<br>γ=0 일 때 Focal Loss 와 동일해지는 기존 손실 함수의 명칭을 쓰고, γ>0 일 때 잘 분류된 예제(well-classified examples)에 미치는 효과를 서술하시오.",
-            answer: "- γ=0 이면 Cross Entropy(CE) 손실과 동일하다.<br>- γ>0 이면 잘 분류된 예제(pt 가 높은 샘플)의 손실이 크게 줄어들어(down-weighted), 모델이 학습이 어려운 예제(hard examples)에 더욱 집중하게 만드는 효과가 있다."
-        },
-        {
-            professor: "한보형 교수님",
-            question: "DETR의 매칭 비용(matching cost)은 클래스 확률과 bounding box 항으로 정의된다. (λ_L1=5, λ_iou=2)<br><br><img src='han_3.png'><br><br>매칭①(GT1-P1, GT2-P2)과 매칭 ②(GT1-P2, GT2-P1) 중 전체 cost 합이 더 작은 최적의 매칭을 고르고 그 최소 total cost를 구하시오.",
-            answer: "[계산 요약]<br>C(GT1, P1) = -0.8 + 5(0.3) + 2(0.5) = 1.7<br>C(GT2, P2) = -0.7 + 5(0.3) + 2(0.5) = 1.8<br>매칭① Total Cost = 1.7 + 1.8 = 3.5<br><br>C(GT1, P2) = -0.3 + 5(1.1) + 2(1.75) = 8.7<br>C(GT2, P1) = -0.2 + 5(1.1) + 2(1.625) = 8.55<br>매칭② Total Cost = 8.7 + 8.55 = 17.25<br><br>최적 매칭은 (GT1-P1, GT2-P2) 이며, 최소 total cost는 3.5 이다."
-        },
-
-        // 이재욱 교수님
-        {
-            professor: "이재욱 교수님",
-            question: "CPU 클럭 속도 2GHz, 총 명령어 수(IC) 4×10^9개이다.<br>[명령어 구성]<br><br><img src='lee_1.png'><br><br>(1) 평균 CPI를 구하시오.<br>(2) 총 CPU Time(초)을 구하시오.<br>(3) 컴파일러 최적화로 Load 명령어 절반이 제거되었다. 최적화 후 CPU Time과 성능 향상 배수를 구하시오.",
-            answer: "(1) 평균 CPI = (0.5×1) + (0.2×4) + (0.1×3) + (0.2×2) = 0.5 + 0.8 + 0.3 + 0.4 = 2.0<br><br>(2) Clock Cycle Time = 1 / (2×10^9 Hz) = 0.5×10^-9 초<br>CPU Time = IC × CPI × Clock Cycle Time = (4×10^9) × 2.0 × (0.5×10^-9) = 4.0 초<br><br>(3) 제거된 Load 사이클 = (4×10^9 × 0.1) × 4 = 1.6×10^9 cycles<br>최적화 후 총 사이클 = 8×10^9 - 1.6×10^9 = 6.4×10^9 cycles<br>최적화 후 CPU Time = 6.4×10^9 / 2×10^9 = 3.2 초<br>성능 비 = 4.0 / 3.2 = 1.25 배 향상"
-        },
-        {
-            professor: "이재욱 교수님",
-            question: "Google TPUv1의 Systolic array 아키텍처에서 Y = W * X 연산을 수행할 때,<br><br><img src='lee_2.png'><br><br>(1) 입력 행렬 X(x11~x33)는 입력 포트에 어떤 순서로 적용되어야 하는가? (미러링 포함)<br>(2) 6개의 출력값(y11~y23)은 하단 (c), (d), (e) 또는 우측 (a), (b) 중 어느 방향으로 나가는가?<br>(3) 가장 마지막으로 출력되는 값은 무엇인가?",
-            answer: "(1) Inputs (y축 미러링 허용. 대각선 형태로 순차적 입력됨):<br><br><img src='lee_3.png'><br><br>(2) y11, y12, y13 -> 우측 (a) 방향으로 출력 / y21, y22, y23 -> 우측 (b) 방향으로 출력.<br>(3) 마지막으로 출력되는 값: y23"
-        },
-        {
-            professor: "이재욱 교수님",
-            question: "어떤 NPU의 최대 연산 성능은 50 TFLOP/s, 최대 메모리 대역폭은 1 TB/s 이다.<br><br>(1) 이 NPU의 ridge point에 해당하는 arithmetic intensity(FLOP/byte)를 구하시오.<br>(2) 커널 X(10 FLOP/byte)와 커널 Y(200 FLOP/byte)가 각각 compute/memory-bound 중 어디에 속하는지 판별하고 달성 가능한 성능을 구하시오.<br>(3) 메모리 대역폭을 2배(2TB/s)로 늘릴 경우 ridge point와 각 커널의 성능은 어떻게 변하는지 서술하시오.",
-            answer: "(1) Ridge point = (50×10^12 FLOP/s) / (1×10^12 byte/s) = 50 FLOP/byte<br><br>(2) 커널 X (AI=10 < 50): memory-bound. 달성 성능 = 1TB/s × 10 = 10 TFLOP/s<br>커널 Y (AI=200 > 50): compute-bound. 달성 성능 = 최대 성능 = 50 TFLOP/s<br><br>(3) 대역폭이 2배가 되면 Ridge point는 25 FLOP/byte로 감소.<br>- 커널 X(AI=10): 여전히 memory-bound. 성능은 2TB/s × 10 = 20 TFLOP/s로 (2배 향상).<br>- 커널 Y(AI=200): 여전히 compute-bound. 성능은 50 TFLOP/s로 (변화 없음)."
-        },
-
-        // 윤성의 교수님
-        {
-            professor: "윤성의 교수님",
-            question: "강의에서는 Retrieval-Augmented Generation(RAG)을 'Parametric Memory와 Non-parametric Memory의 결합'으로 설명하였다.<br><br>1. 두 Memory 의 차이를 설명하고,<br>2. RAG가 Hallucination을 줄일 수 있는 이유를 설명하라.",
-            answer: "1. Parametric Memory는 LLM의 가중치에 저장된 지식으로 학습 시점까지의 정보를 포함한다. 반면 Non-parametric Memory는 벡터 데이터베이스나 문서 저장소와 같은 외부 지식 저장소이다.<br><br>2. 일반 LLM은 내부 지식만 이용하여 답변하므로 사실과 다른 내용을 생성(Hallucination)할 수 있다. RAG는 질문과 관련된 문서를 외부 저장소에서 먼저 검색하고, 그 검색 결과를 근거로 답변을 생성하므로 사실 기반 답변을 생성할 수 있다."
-        },
-        {
-            professor: "윤성의 교수님",
-            question: "RAG와 Agentic RAG의 차이를 설명하고, Agentic RAG가 일반 RAG 보다 갖는 장점과 단점을 각각 하나씩 서술하시오.",
-            answer: "차이점: 일반 RAG는 관련 정보를 단순 검색한 후 답변을 생성하지만, Agentic RAG는 검색뿐 아니라 추가 검색, 추론, 답변 검토 및 수정 등의 과정을 스스로 수행하는 에이전트 형태의 시스템이다.<br><br>- 장점: 복잡한 문제에 대해 더 정확한 답변을 생성할 수 있으며 잘못된 답변을 스스로 수정할 수 있다.<br>- 단점: 더 많은 검색과 추론 사이클이 필요하여 시간과 비용(연산량)이 크게 증가한다."
-        },
-
-        // 김선주 교수님
-        {
-            professor: "김선주 교수님",
-            question: "(1) CIE XYZ와 같은 color space가 필요한 이유는 무엇인가?<br>(2) raw camera RGB 값을 XYZ로 변환하기 위해 필요한 보정 작업은 무엇이고, 이에 해당되는 알고리즘(2가지)을 간단히 설명하시오.",
-            answer: "(1) 색상을 정량화(To quantify color)하기 위해서 필요하다.<br>(2) 필요한 보정 작업은 White Balance 이다.<br>- Gray world algorithm: r/g/b 픽셀 값의 평균이 조명색이라고 가정하여 보정<br>- White Patch Algorithm: 이미지에서 가장 밝은 색이 조명색이라고 가정하여 보정"
-        },
-        {
-            professor: "김선주 교수님",
-            question: "ISP(Image Signal Processor)에 들어가는 아래 과정들을 순서대로 나열하시오.<br>(Noise Reduction, Color Manipulation, RGB Demosaicing, White Balance & Color Transform, ISO gain and raw processing, Image Rescaling, Mapping to output color space, Save to File, JPEG Compression)",
-            answer: "1. Sensor with CFA<br>2. ISO gain and raw-image processing<br>3. RGB Demosaicing<br>4. Noise Reduction<br>5. White-Balance & Color Space Transform (CIE XYZ)<br>6. Color Manipulation (Photo-finishing)<br>7. Image Rescaling (or up-scaling)<br>8. Mapping to output color space (e.g., sRGB)<br>9. JPEG/HEIC Compression<br>10. Save to file"
-        },
-        {
-            professor: "김선주 교수님",
-            question: "VDSR은 기존의 SR(Super Resolution)을 위한 CNN 구조(SRCNN) 대비 레이어 수를 대폭 늘릴 수 있었는데(3개 -> 20개), 이러한 깊은 구조가 가능했던 이유를 간단히 서술하시오.",
-            answer: "기존 SRCNN은 입력(저해상도)에서 출력(고해상도) 전체를 직접 매핑(Direct mapping)하도록 학습한 반면, VDSR은 입력과 출력 간의 저주파 정보가 유사하다는 점을 활용하여, 고해상도 이미지와 확대된 저해상도 이미지 간의 차이인 'Residual'만을 학습하도록 설계되었기 때문이다. 이로 인해 네트워크가 훨씬 더 효율적이고 안정적으로 깊게 학습이 가능했다."
-        },
-
-        // 홍승훈 교수님
-        {
-            professor: "홍승훈 교수님",
-            question: "이미지 분류용 CNN을 FCN(Fully Convolutional Network)으로 변환하면 왜 임의 크기의 입력 이미지에 대해 spatial score map을 출력할 수 있는지 설명하고, 이 score map 으로부터 최종 semantic segmentation label map을 얻는 과정을 설명하시오.",
-            answer: "설명: Fully-connected layer는 고정된 크기의 입력에 대해 하나의 벡터를 출력하지만, 이를 convolution layer로 바꾸면 같은 연산을 spatial location 마다 sliding window 방식으로 적용할 수 있기 때문에 임의 크기의 입력도 처리가 가능하다.<br><br>과정: 각 위치마다 class 별 score 가 생성된 map에서, 최종적으로 각 픽셀(위치)마다 class score 가 가장 큰 class를 선택하는 'per-pixel argmax'를 수행하여 최종 label map을 얻는다. (필요 시 upsampling 수행)"
-        },
-        {
-            professor: "홍승훈 교수님",
-            question: "기본 FCN의 대표적인 한계 두 가지를 설명하고, 이를 개선하기 위해 사용되는 (1) encoder-decoder network, (2) atrous convolution 이 각각 어떤 문제를 해결하는지 설명하시오.",
-            answer: "한계:<br>1. 여러 번의 downsampling으로 해상도가 낮아져 물체의 경계나 세부 형태가 손실됨.<br>2. Receptive field가 고정되어 있어 크기가 다양한 물체나 주변 문맥을 잘 처리하기 어려움.<br><br>해결 방법:<br>(1) Encoder-decoder: encoder에서 잃어버린 공간 정보를 decoder(skip connection, upsampling 등)에서 복원하여 더 정교한 해상도의 segmentation map을 만듦.<br>(2) Atrous convolution: filter 사이에 hole을 두어 파라미터를 늘리거나 해상도를 낮추지 않고도 Receptive field를 넓힘으로써 넓은 문맥을 파악하게 함."
-        },
-        {
-            professor: "홍승훈 교수님",
-            question: "Semantic segmentation 관점에서 convolution 기반 encoder 와 self-attention 기반 Transformer encoder 의 차이를 receptive field, 입력 의존성, parameter sharing 측면에서 비교하시오.",
-            answer: "- Receptive field: Conv는 local neighborhood에 한정되며 넓히려면 layer를 많이 쌓아야 함. 반면 Self-attention은 한 layer에서도 전체 입력을 보는 global receptive field를 가짐.<br>- 입력 의존성: Conv 필터는 고정된 가중치를 사용하여 입력 내용에 상관없이 동일하게 연산(입력 독립적). Self-attention의 attention weight는 query와 key의 유사도로 계산되어 이미지 내용에 따라 동적으로 변함.<br>- Parameter sharing: Conv는 위치마다 파라미터를 공유하므로 파라미터 효율성이 높음(Translation invariance). Self-attention은 쌍(pairwise) 연산을 수행하여 계산량은 높으나 동적인 문맥 파악에 유리함."
-        }
-    ];
+    // questions는 외부 JSON으로 관리하도록 변경
+    let allQuestions = []; // 전체 문제 로드
+    let questions = []; // 필터 적용된 문제 목록
 
     let currentIndex = 0;
     
@@ -517,8 +391,86 @@
         finalScore.innerText = `${totalCorrect} / ${questions.length}`;
     }
 
+    // 자동 채점 요청 (프론트엔드)
+    async function requestGrade() {
+        const gradeUrl = 'http://localhost:3000/grade'; // change if your server runs elsewhere
+        const payload = {
+            questionId: questions[currentIndex].id,
+            studentAnswer: userAnswer.value || ''
+        };
+
+        const resultDiv = document.getElementById('auto-grade-result');
+        resultDiv.innerText = '채점 중... 잠시만 기다려주세요.';
+
+        try {
+            const resp = await fetch(gradeUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+            if (data.error) {
+                resultDiv.innerText = '채점 실패: ' + (data.error || JSON.stringify(data));
+                return;
+            }
+
+            const modelRes = data.fromModel || data;
+            // modelRes should contain score/verdict/feedback or be nested
+            const score = modelRes.score ?? (modelRes.result && modelRes.result.score) ?? null;
+            const verdict = modelRes.verdict ?? (modelRes.result && modelRes.result.verdict) ?? null;
+            const feedback = modelRes.feedback ?? (modelRes.result && modelRes.result.feedback) ?? JSON.stringify(modelRes);
+
+            if (score !== null) {
+                resultDiv.innerHTML = `자동채점: <strong>${verdict ?? '판정 없음'}</strong> (${score}점)<br>${feedback}`;
+                // update questionStates: treat >=60 as correct
+                questionStates[currentIndex] = (score >= 60);
+            } else {
+                resultDiv.innerText = '모델 응답을 해석할 수 없습니다.';
+                // show raw
+                resultDiv.innerText += '\n' + JSON.stringify(modelRes);
+            }
+
+            renderStats();
+        } catch (e) {
+            resultDiv.innerText = '채점 요청 중 오류가 발생했습니다.';
+            console.error(e);
+        }
+    }
+
     // 앱 시작 시 최초 실행
-    loadQuestion();
+    // 체크박스 필터 토글 이벤트와 JSON 로드
+    document.getElementById('filter-hidden').addEventListener('change', () => {
+        applyFilter();
+    });
+
+    // JSON에서 문제 로드 (questions.json 파일 필요)
+    fetch('questions.json')
+        .then(res => res.json())
+        .then(data => {
+            // 예상: data는 배열 형태의 문제 목록
+            allQuestions = data.map((q, idx) => ({ id: q.id ?? idx, hidden: q.hidden ?? false, ...q }));
+            // 초기 필터 적용
+            applyFilter();
+        })
+        .catch(err => {
+            console.error('questions.json 로드 실패, 내부 기본 목록 사용', err);
+            // fallback: 기존 내장 questions가 필요하면 구현
+        });
+
+    function applyFilter() {
+        const showHidden = document.getElementById('filter-hidden').checked;
+        questions = allQuestions.filter(q => showHidden ? q.hidden === true : q.hidden !== true);
+        // 질문 상태 배열 재설정
+        questionStates.length = questions.length;
+        for (let i = 0; i < questions.length; i++) questionStates[i] = null;
+        currentIndex = 0;
+        if (questions.length > 0) loadQuestion();
+        else {
+            questionText.innerHTML = '조건에 맞는 문제가 없습니다.';
+            professorTag.innerText = '';
+            progressText.innerText = `0 / 0`;
+        }
+    }
 </script>
 
 </body>
