@@ -1,2 +1,5 @@
-# thirdai.github.io
-thirdai.github.io
+#### AI expert 3회차 시험에 대한 준비
+
+주관식 문제 트레이닝 하도록 구성하였습니다.
+
+hidden 문제 제보 해주세요.
