@@ -283,7 +283,7 @@
         "id": 41,
         "professor": "임종우 교수님",
         "question": "Bayesian Filtering의 Prediction-Correction 과정의 수식적 유도 과정을 기술하고, 각 단계별로 사용되는 확률 법칙(Bayes' rule 등)과 적분 항(Integral)이 갖한 수학적 의미를 설명하시오.<br><br><img src='bayesian_1.png'>",
-        "answer": "Bayesian Filtering은 Markov property와 Measurement model 가정을 바탕으로 수행된다. Prediction 단계에서는 이전 시점의 Posterior $P(x_{t-1}|z_{1:t-1})$와 상태 전이 모델 $P(x_t|x_{t-1})$을 적분하여 다음 시점의 Prior $P(x_t|z_{1:t-1})$를 구한다. 이때 적분은 가능한 모든 이전 상태에 대한 확률 가중치 합을 계산하는 것을 의미한다. Correction 단계에서는 Bayes' Theorem을 사용하여 새로운 관측값 $z_t$가 들어왔을 때, Likelihood $P(z_t|x_t)$와 Prior의 곱을 통해 최적의 사후 확률(Posterior) $P(x_t|z_{1:t})$를 도출한다.",
+        "answer": "Bayesian Filtering은 Markov property와 Measurement model 가정을 바탕으로 수행된다. <br>Prediction 단계에서는 이전 시점의 Posterior $P(x_{t-1}|z_{1:t-1})$와 상태 전이 모델 $P(x_t|x_{t-1})$을 적분하여 다음 시점의 Prior $P(x_t|z_{1:t-1})$를 구한다. 이때 적분은 가능한 모든 이전 상태에 대한 확률 가중치 합을 계산하는 것을 의미한다. <br>Correction 단계에서는 Bayes' Theorem을 사용하여 새로운 관측값 $z_t$가 들어왔을 때, Likelihood $P(z_t|x_t)$와 Prior의 곱을 통해 최적의 사후 확률(Posterior) $P(x_t|z_{1:t})$를 도출한다.",
         "hidden": true
     },
     {
