@@ -279,18 +279,18 @@
         "answer": "(1) 전체 성능 및 오류 누적 관점:<br>Single DNN은 데이터로부터 최적의 매핑을 스스로 학습(End-to-end)하므로 화질 성능을 극대화할 수 있고, 모듈 간의 작은 오류가 다음 단계로 전달되며 눈덩이처럼 커지는 오류 누적(Error Propagation) 현상을 원천적으로 차단할 수 있다. 반면, Modular DNNs는 각 모듈이 개별적으로 최적화되더라도 전체 파이프라인 관점에서는 최고의 성능을 보장하지 못하는 한계(Sub-optimal)가 있다.<br><br>(2) 제어력 및 유지보수 관점:<br>Modular DNNs는 특정 기능(예: 노이즈 제어)만 튜닝하거나 카메라 센서가 변경될 때 전체 네트워크를 다시 학습할 필요 없이 해당 모듈만 재학습할 수 있어 제어력과 해석력이 뛰어나다 (단, 각 모듈별 입출력 데이터가 필요함). 반면, Single DNN은 네트워크 내부가 블랙박스화되어 세밀한 제어(Tunability)를 상실한다는 단점이 있다.",
         "hidden": true
     },
-    {
+{
         "id": 41,
         "professor": "임종우 교수님",
-        "question": "베이지안 필터링(Bayesian Filtering)을 기반으로 하는 객체 상태 추정에서, 칼만 필터(Kalman Filter)와 파티클 필터(Particle Filter)가 객체의 확률 밀도 함수(PDF)를 표현하고 갱신하는 방식의 결정적인 차이점을 서술하시오.",
-        "answer": "칼만 필터는 객체의 상태(확률 밀도 함수)가 가우시안(Gaussian) 분포를 따르며 시스템이 선형(Linear)적이라고 단순화된 가정을 두고, 평균(Mean)과 오차 공분산(Error covariance) 수식만을 갱신하여 상태를 최적으로 추정한다. 반면 파티클 필터는 비가우시안 및 다중 모드(Multiple modes)를 가지는 복잡한 시스템에서도 적용할 수 있도록, 무작위로 추출된 다수의 샘플(Particle)들과 각 샘플의 가중치(Weight) 집합을 사용하여 일반적인 형태의 확률 밀도 함수(General PDFs)를 근사적으로 표현하고 갱신한다.",
+        "question": "Bayesian Filtering의 Prediction-Correction 과정의 수식적 유도 과정을 기술하고, 각 단계별로 사용되는 확률 법칙(Bayes' rule 등)과 적분 항(Integral)이 갖한 수학적 의미를 설명하시오.",
+        "answer": "Bayesian Filtering은 Markov property와 Measurement model 가정을 바탕으로 수행된다. Prediction 단계에서는 이전 시점의 Posterior $P(x_{t-1}|z_{1:t-1})$와 상태 전이 모델 $P(x_t|x_{t-1})$을 적분하여 다음 시점의 Prior $P(x_t|z_{1:t-1})$를 구한다. 이때 적분은 가능한 모든 이전 상태에 대한 확률 가중치 합을 계산하는 것을 의미한다. Correction 단계에서는 Bayes' Theorem을 사용하여 새로운 관측값 $z_t$가 들어왔을 때, Likelihood $P(z_t|x_t)$와 Prior의 곱을 통해 최적의 사후 확률(Posterior) $P(x_t|z_{1:t})$를 도출한다.",
         "hidden": true
     },
-    {
+{
         "id": 42,
         "professor": "임종우 교수님",
-        "question": "베이지안 필터링 기반 객체 추적에서 사용하는 칼만 필터(Kalman Filter)의 'Prediction-Correction' 과정의 핵심 수식적 의미와, 비가우시안(Non-Gaussian) 시스템을 다루기 위해 도입된 파티클 필터(Particle Filter)의 확률 밀도 함수(PDF) 표현 방식을 비교하여 설명하시오.",
-        "answer": "칼만 필터는 선형 동적 시스템에서 노이즈가 포함된 측정값을 바탕으로 내부 상태를 추정합니다. Prediction 단계에서는 이전 상태와 오차 공분산을 투영(Project)하여 다음 상태를 예측하고, Correction 단계에서는 칼만 이득(Kalman gain)을 계산하여 새로운 측정값으로 상태를 최적으로 업데이트합니다. 반면 파티클 필터는 가우시안 분포로 한정되지 않는 일반적인 확률 밀도 함수(General PDFs)를 표현하기 위해 가중치가 부여된 다수의 샘플(Weighted samples, Particles) 집합을 사용하며, 샘플이 많을수록 실제 PDF에 더욱 가깝게 근사할 수 있습니다.",
+        "question": "베이지안 필터링(Bayesian Filtering)의 기본 개념을 설명하고, 새로운 관측값(Observation)이 들어왔을 때 상태(State)를 업데이트하는 핵심 원리를 베이즈 정리(Bayes' Rule) 관점에서 서술하시오.",
+        "answer": "베이지안 필터링은 불확실한 시스템의 상태를 추정하기 위해, 이전 단계의 예측값(Prior)과 새로운 측정값으로부터 얻은 가능도(Likelihood)를 결합하여 최적의 확률 분포(Posterior)를 계산하는 기법입니다. 그 원리는 베이즈 정리에 기반하며, $P(x_t | z_{1:t}) \propto P(z_t | x_t) P(x_t | z_{1:t-1})$ 식과 같이, 새로운 관측치($z_t$)가 주어졌을 때 사후 확률(Posterior)이 사전 확률(Prior)에 가능도(Likelihood)를 곱한 형태에 비례하도록 업데이트하는 과정을 반복하는 것입니다.",
         "hidden": true
-    }
+    },
 ]
