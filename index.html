@@ -203,17 +203,30 @@
             .grading-buttons { flex-direction: column; }
         }
     </style>
-<!-- MathJax 로드 -->
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']], // $ 기호 활성화
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
 
-<script>
-  // 만약 데이터가 비동기(AJAX/Fetch)로 로드된다면, 
-  // 데이터를 화면에 뿌린 후 아래 명령어를 실행해줘야 수식이 새로 그려집니다!
-  function reloadMath() {
-    MathJax.typesetPromise();
-  }
-</script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <script>
+    // 만약 데이터가 비동기(AJAX/Fetch)로 로드된다면, 
+    // 데이터를 화면에 완전히 뿌린 직후에 아래 함수를 호출하세요.
+    function reloadMath() {
+      if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(function (err) {
+          console.error('MathJax 렌더링 에러:', err.message);
+        });
+      } else {
+        console.warn('MathJax가 아직 로드되지 않았습니다.');
+      }
+    }
+  </script>
 </head>
 <body>
 
