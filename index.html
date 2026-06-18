@@ -240,12 +240,14 @@
         </div>
     </div>
 
-    <div class="result-screen" id="result-screen">
-        <h1>🎉 모든 학습 완료!</h1>
-        <p>전체 모의고사를 끝마치셨습니다.</p>
-        <div class="score-display" id="final-score">0 / 24</div>
-        <button class="btn btn-primary" onclick="location.reload()">처음부터 다시 풀기</button>
-    </div>
+<div class="result-screen" id="result-screen">
+    <h1>🎉 모든 학습 완료!</h1>
+    <p>전체 모의고사를 끝마치셨습니다.</p>
+    <div class="score-display" id="final-score">0 / 24</div>
+    
+    <button id="retry-wrong-btn" class="btn btn-danger" style="margin-bottom: 12px; display: none;" onclick="retryWrongQuestions()">틀린 문제만 다시 풀기 🎯</button>
+    
+    <button class="btn btn-primary" onclick="location.reload()">처음부터 다시 풀기</button>
 </div>
 
 <div class="dashboard-container">
@@ -381,16 +383,48 @@
         }
     }
 
-    // 모든 문제를 푼 후 결과 화면 띄우기
-    function showResults() {
-        quizScreen.style.display = 'none';
-        resultScreen.style.display = 'block';
-        
-        // 맞은 개수 카운트
-        const totalCorrect = questionStates.filter(state => state === true).length;
-        finalScore.innerText = `${totalCorrect} / ${questions.length}`;
+// 1. 기존 showResults() 함수 덮어쓰기
+function showResults() {
+    quizScreen.style.display = 'none';
+    resultScreen.style.display = 'block';
+    
+    // 맞은 개수 및 틀린 개수 카운트
+    const totalCorrect = questionStates.filter(state => state === true).length;
+    const totalWrong = questionStates.filter(state => state === false).length;
+    
+    finalScore.innerText = `${totalCorrect} / ${questions.length}`;
+
+    // 틀린 문제가 1개라도 있으면 '틀린 문제만 다시 풀기' 버튼 표시
+    const retryBtn = document.getElementById('retry-wrong-btn');
+    if (retryBtn) {
+        retryBtn.style.display = totalWrong > 0 ? 'block' : 'none';
+    }
+}
+
+// 2. 새로운 함수 추가: 틀린 문제만 모아서 다시 시작
+function retryWrongQuestions() {
+    // 기존 질문 목록에서 상태가 false(틀림)인 문제들만 추출
+    const wrongQuestions = questions.filter((q, idx) => questionStates[idx] === false);
+    
+    if (wrongQuestions.length === 0) return; // 혹시 모를 예외 처리
+
+    // 현재 문제 목록을 틀린 문제들로 덮어씌움
+    questions = wrongQuestions;
+    
+    // 상태 배열 크기를 맞추고 모두 null(안 풂)로 초기화
+    questionStates.length = questions.length;
+    for (let i = 0; i < questions.length; i++) {
+        questionStates[i] = null;
     }
 
+    // 인덱스 초기화 및 화면 전환
+    currentIndex = 0;
+    resultScreen.style.display = 'none';
+    quizScreen.style.display = 'block';
+    
+    // 새로운 목록으로 첫 문제 로드
+    loadQuestion();
+}
     // 자동 채점 요청 (프론트엔드)
     async function requestGrade() {
     const resultDiv = document.getElementById('auto-grade-result');
