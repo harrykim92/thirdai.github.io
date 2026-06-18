@@ -355,25 +355,23 @@
             loadQuestion();
         }
     }
-
-    // 문제 화면 띄우기
     function loadQuestion() {
-        // 맨 위로 스크롤 애니메이션 (모바일에서 매우 유용함)
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         const q = questions[currentIndex];
         progressText.innerText = `${currentIndex + 1} / ${questions.length}`;
         professorTag.innerText = q.professor;
-        questionText.innerHTML = q.question; // innerHTML로 변경하여 HTML 태그 작동
-        correctAnswer.innerHTML = q.answer;  // innerHTML로 변경
+        questionText.innerHTML = q.question; 
+        correctAnswer.innerHTML = q.answer;  
         
+        // 👇 ADD THIS LINE HERE TO FIX THE MATH!
+        reloadMath(); 
+
         userAnswer.value = '';
         answerSection.style.display = 'none';
         submitBtn.style.display = 'block';
-        
-        renderStats(); // 활성화된 박스 표시 업데이트
+        renderStats();
     }
-
     // 정답 확인버튼 클릭 (빈칸 제출 허용)
     function showAnswer() {
         submitBtn.style.display = 'none';
