@@ -290,7 +290,7 @@
         "id": 42,
         "professor": "임종우 교수님",
         "question": "베이지안 필터링(Bayesian Filtering)의 기본 개념을 설명하고, 새로운 관측값(Observation)이 들어왔을 때 상태(State)를 업데이트하는 핵심 원리를 베이즈 정리(Bayes' Rule) 관점에서 서술하시오.",
-        "answer": "베이지안 필터링은 불확실한 시스템의 상태를 추정하기 위해, 이전 단계의 예측값(Prior)과 새로운 측정값으로부터 얻은 가능도(Likelihood)를 결합하여 최적의 확률 분포(Posterior)를 계산하는 기법입니다. 그 원리는 베이즈 정리에 기반하며, $P(x_t | z_{1:t}) \propto P(z_t | x_t) P(x_t | z_{1:t-1})$ 식과 같이, 새로운 관측치($z_t$)가 주어졌을 때 사후 확률(Posterior)이 사전 확률(Prior)에 가능도(Likelihood)를 곱한 형태에 비례하도록 업데이트하는 과정을 반복하는 것입니다.",
+        "answer": "베이지안 필터링은 불확실한 시스템의 상태를 추정하기 위해, 이전 단계의 예측값(Prior)과 새로운 측정값으로부터 얻은 가능도(Likelihood)를 결합하여 최적의 확률 분포(Posterior)를 계산하는 기법입니다. 그 원리는 베이즈 정리에 기반하며, $P(x_t | z_{1:t}) \\propto P(z_t | x_t) P(x_t | z_{1:t-1})$ 식과 같이, 새로운 관측치($z_t$)가 주어졌을 때 사후 확률(Posterior)이 사전 확률(Prior)에 가능도(Likelihood)를 곱한 형태에 비례하도록 업데이트하는 과정을 반복하는 것입니다.",
         "hidden": true
     }
 ]
