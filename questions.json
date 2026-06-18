@@ -193,21 +193,21 @@
         "professor": "홍승훈 교수님",
         "question": "Vision Transformer(ViT)를 이미지 분류에 적용할 때, 이미지를 처리하는 과정에서 (1) 왜 Positional encoding이 추가되어야 하는지 설명하고, (2) 입력 패치들 외에 추가로 들어가는 Global (cls) token의 역할이 무엇인지 설명하시오.",
         "answer": "(1) Positional encoding: Transformer의 Self-attention 연산 자체는 입력 토큰의 순서나 위치 정보를 파악하지 못하므로, 이미지를 1D 패치 시퀀스로 만들었을 때 각 패치의 공간적 위치 정보를 모델에 제공하기 위해 주기 함수나 학습 가능한 형태의 positional embedding을 더해주어야 한다.<br><br>(2) Global (cls) token: 입력 이미지 패치들과 별개로 주어지는 학습 가능한 추가 토큰으로, Transformer encoder 계층을 거치며 다른 모든 패치 토큰들과 attention을 통해 전역적(global) 문맥 정보를 집약하게 된다. 최종적으로 이 토큰의 출력 임베딩 벡터만을 MLP head에 전달하여 전체 이미지의 클래스 예측(classification)에 사용한다.",
-        "hidden": True
+        "hidden": true
     },
     {
         "id": 29,
         "professor": "홍승훈 교수님",
         "question": "Semantic segmentation을 위해 Transformer encoder 뒤에 결합하는 Decoder의 설계 방식 중, 특징 맵을 점진적으로 upsampling하는 Convolutional Decoder 방식과 대비되는 (1) Transformer decoder (Segmenter)와 (2) Hybrid decoder (MaskFormer)가 각각 최종 segmentation map을 생성하는 핵심 원리를 설명하시오.",
         "answer": "(1) Transformer decoder (Segmenter): Encoder에서 나온 contextualized patch token들과 함께 각 클래스를 나타내는 'Learnable class tokens'를 Mask Transformer에 통과시킨다. 이후 출력된 class token과 patch token 간의 Scalar Product(내적)를 통해 Class Mask를 구하고, 이를 원래 이미지 크기로 Upsampling 및 Argmax를 취해 최종 Segmentation map을 얻는다.<br><br>(2) Hybrid decoder (MaskFormer): 모든 픽셀을 분류하는 대신, N개의 후보 객체(Object) 마스크를 먼저 예측하고 이 마스크들의 클래스를 분류하는 방식을 취한다. Transformer decoder로 N개의 Object embedding을 추출해 클래스를 예측하고, 이 임베딩을 Pixel-level module(Pixel decoder)에서 나온 Per-pixel embedding과 내적하여 N개의 Binary mask를 생성한 뒤 최종적으로 결합한다.",
-        "hidden": True
+        "hidden": true
     },
     {
         "id": 30,
         "professor": "홍승훈 교수님",
         "question": "다양한 Dense prediction task (Depth, Surface Normal, Semantic Segmentation 등)는 출력 채널 수와 의미가 각기 다르다. 이러한 다수의 task를 하나의 통합된 모델로 처리하기 위한 Universal Few-shot Learner (Task-agnostic architecture)에서 서로 다른 출력 채널 수를 가진 task들을 단일 구조로 어떻게 처리하는지(Decomposing) 설명하고, 새로운 task에 대해 어떻게 효율적으로 적응(Adaptation)하는지 설명하시오.",
         "answer": "- 채널 처리 방식 (Decomposing): 임의의 채널 수(C_T)를 갖는 task를 여러 개의 단일 채널(Single-channel) subtask로 분해하여 처리한다. 즉, 각 채널을 독립적인 하나의 task로 취급함으로써 채널 크기와 무관하게 단일 파라미터 구조를 다양한 task에 범용적으로 적용할 수 있다.<br><br>- 효율적 적응 방식 (Adaptation): 전체 모델 파라미터를 업데이트하는 대신, Image Encoder 내에 있는 극히 일부(전체 파라미터의 0.3% 미만)인 bias parameter 같은 task-specific parameter만 fine-tuning 한다. 이를 통해 임베딩 공간 상에서 패치 간의 유사도 측정(similarity measure) 기준을 새로운 task에 맞게 변화시키며, 오버피팅 없이 빠르게 적응할 수 있다.",
-        "hidden": True
+        "hidden": true
     },
     {
         "id": 31,
