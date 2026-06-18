@@ -1,4 +1,3 @@
-
 [
     {
         "id": 1,
@@ -220,15 +219,15 @@
     {
         "id": 32,
         "professor": "이재욱 교수님",
-        "question": "사용자 정의 SoC에 가속기를 추가할 때 사용하는 RoCC(Rocket Chip Coprocessor)와 기존 MMIO 방식의 차이점을 통신(Communication) 방식과 소프트웨어 툴체인 관점에서 비교하시오. 또한, RoCC 인터페이스의 decoupled 포트 중 프로세서 코어에서 가속기로 명령어 전체와 2개의 레지스터 값을 전달하는 포트의 이름을 쓰시오.",
-        "answer": "MMIO 방식은 메모리 맵(memory-mapped) 레지스터를 통해 주변 장치와 통신하며, 적절한 드라이버 지원이 포함된 표준 툴체인을 사용한다. 반면, RoCC 가속기는 RISC-V ISA 인코딩 공간에 예약된 사용자 정의(non-standard) 명령어와 커스텀 프로토콜을 통해 프로세서와 긴밀하게(tightly-coupled) 통신하며, 이를 지원하기 위한 커스텀 소프트웨어 툴체인이 필요하다. 코어에서 가속기로 레지스터 값과 명령어를 전달하는 포트 이름은 'cmd' 이다.",
+        "question": "개방형 명령어 집합 구조(ISA)인 RISC-V 기반 시스템에서 사용자 정의 가속기를 추가하는 두 가지 주요 방식인 MMIO와 RoCC의 개념을 통신(Communication) 방식 관점에서 간단히 비교하여 설명하시오.",
+        "answer": "MMIO(Memory-Mapped I/O)는 메모리 맵 레지스터를 통해 주변 장치와 통신하는 범용적인 방식입니다. 반면, RoCC(Rocket Chip Coprocessor)는 RISC-V ISA에 예약된 사용자 정의(non-standard) 명령어와 커스텀 프로토콜을 사용하여 프로세서와 매우 긴밀하게(tightly-coupled) 직접 통신하는 가속기 전용 인터페이스입니다.",
         "hidden": true
     },
     {
         "id": 33,
         "professor": "이재욱 교수님",
-        "question": "Chipyard 프레임워크 기반 설계에서, Chisel 언어로 작성된 하드웨어가 FPGA 에뮬레이션이나 ASIC용 Verilog로 변환되기 위해 거치는 중간 표현(IR)의 이름은 무엇인가? 이 IR의 역할과, Chisel 언어의 설계 철학 중 \"무엇이 아닌지(What Chisel IS NOT)\"에 해당하는 특징 2가지를 서술하시오.",
-        "answer": "변환 과정에서 거치는 중간 표현(IR)은 FIRRTL(FIRRTL IR)이다. FIRRTL은 하드웨어 컴파일러의 LLVM처럼 동작하여 하드웨어 설명 코드를 자동으로 조작(manipulation) 및 최적화하고, 합성 가능한(synthesizable) 툴 친화적 Verilog 코드를 생성하는 역할을 한다. Chisel이 '아닌 것(NOT)'에 해당하는 2가지 특징은, Scala 코드를 곧바로 게이트 레벨로 변환하는 것(Scala-to-gates)이 아니며, C/C++와 같은 소프트웨어 코드를 하드웨어로 합성하는 HLS(High-Level Synthesis)도 아니라는 점이다.",
+        "question": "RISC-V 생태계에서 널리 활용되는 Chipyard 프레임워크의 핵심 개념과 주요 도입 목적을 간략히 서술하시오.",
+        "answer": "Chipyard는 RISC-V 코어, 가속기, 주변 장치 등을 통합된 하나의 시스템으로 쉽게 결합해주는 애자일(Agile) SoC 설계 프레임워크입니다. 소규모 팀도 맞춤형 시스템 반도체(Custom SoC)를 쉽게 설계, 통합, 시뮬레이션하고 최종적으로 칩 제작(Tape-out)까지 수행할 수 있도록 돕는 것을 주 목적으로 합니다.",
         "hidden": true
     },
     {
@@ -241,7 +240,7 @@
     {
         "id": 35,
         "professor": "하순회 교수님",
-        "question": "다음 표를 참고하여, Self-Attention 계층이 Recurrent 계층(RNN)과 비교하여 갖는 연산상의 장점과 단점을 'Sequential Operations(순차적 연산 수)'와 'Complexity per Layer(계산 복잡도)' 관점에서 각각 설명하시오.<br><br><img src='image_0ab50c.png'>",
+        "question": "Self-Attention 계층이 Recurrent 계층(RNN)과 비교하여 갖는 연산상의 장점과 단점을 'Sequential Operations(순차적 연산 수)'와 'Complexity per Layer(계산 복잡도)' 관점에서 각각 설명하시오.",
         "answer": "장점 (병렬성 향상): Recurrent 계층의 순차적 연산 수는 <math><mi>O</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>으로, 이전 시점의 연산이 완료되어야 다음 시점을 계산할 수 있어 병렬화가 어렵다. 반면, Self-Attention은 순차적 연산 수가 <math><mi>O</mi><mo>(</mo><mn>1</mn><mo>)</mo></math>로 시퀀스 내 모든 요소의 연산을 동시에 수행할 수 있어 멀티코어, GPU/NPU 등 하드웨어 가속기의 유틸리티를 극대화할 수 있다.<br><br>단점 (긴 시퀀스에서의 연산량 폭발): Recurrent 계층의 계산 복잡도는 시퀀스 길이 n에 선형적으로 비례(<math><mi>O</mi><mo>(</mo><mi>n</mi><mo>&#183;</mo><msup><mi>d</mi><mn>2</mn></msup><mo>)</mo></math>)하지만, Self-Attention의 계산 복잡도는 n의 제곱에 비례(<math><mi>O</mi><mo>(</mo><msup><mi>n</mi><mn>2</mn></msup><mo>&#183;</mo><mi>d</mi><mo>)</mo></math>)한다. 따라서 이미지나 긴 문서처럼 시퀀스 길이 n이 차원 d보다 매우 커질 경우 연산량과 메모리 사용량이 기하급수적으로 폭발하는 병목 현상이 발생한다.",
         "hidden": true
     },
