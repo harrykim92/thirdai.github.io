@@ -135,7 +135,7 @@
     {
         "id": 20,
         "professor": "김선주 교수님",
-        "question": "ISP(Image Signal Processor)에 들어가는 아래 과정들을 순서대로 나열하시오.<br>(Noise Reduction, Color Manipulation, RGB Demosaicing, White Balance & Color Transform, ISO gain and raw processing, Image Rescaling, Mapping to output color space, Save to File, JPEG Compression)",
+        "question": "ISP(Image Signal Processor)에 들어가는 아래 과정들을 순서대로 나열하시오.<br>Noise Reduction<br>Color Manipulation<br>RGB Demosaicing<br>White Balance & Color Transform<br>ISO gain and raw processing<br>Image Rescaling<br>Mapping to output color space<br>Save to File<br>JPEG Compression",
         "answer": "1. Sensor with CFA<br>2. ISO gain and raw-image processing<br>3. RGB Demosaicing<br>4. Noise Reduction<br>5. White-Balance & Color Space Transform (CIE XYZ)<br>6. Color Manipulation (Photo-finishing)<br>7. Image Rescaling (or up-scaling)<br>8. Mapping to output color space (e.g., sRGB)<br>9. JPEG/HEIC Compression<br>10. Save to file",
         "hidden": false
     },
