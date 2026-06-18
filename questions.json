@@ -47,7 +47,7 @@
         "question": "2D 평면 변환(Planar Transformation)을 제한적인 변환부터 일반적인 변환 계층 순서대로 4가지(Rigid, Similarity, Affine, Projective/Homography) 나열하고, 각 변환의 자유도(Degree of Freedom)와 변환 후에도 보존되는 기하학적 성질(Invariants)을 서술하시오.",
         "answer": "- Rigid (Translation + Rotation): 자유도는 3입니다. 변환 후에도 선분의 길이(Length), 두 선분 사이의 각도(Angle), 면적(Area)이 모두 보존됩니다.<br>- Similarity (Rigid + Uniform Scale): 자유도는 4입니다. 길이는 변할 수 있지만 각도, 직선, 평행선이 보존되며, 길이의 비율(Ratio of lengths)이 일정하게 유지됩니다.<br>- Affine: 자유도는 6입니다. 평행선(Parallelism)과 선분의 길이 비율, 면적의 비율이 보존되지만, 각도와 절대적인 길이는 변할 수 있습니다.<br>- Projective (Homography): 자유도는 8입니다. 직선성(Collinearity)과 네 점 사이의 교차 비율(Cross ratio)만 보존되며, 평행선은 더 이상 보존되지 않고 임의의 점에서 만날 수 있습니다(소실점 발생).",
         "hidden": true
-    }
+    },
     {
         "id": 8,
         "professor": "하순회 교수님",
