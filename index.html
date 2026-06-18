@@ -203,6 +203,17 @@
             .grading-buttons { flex-direction: column; }
         }
     </style>
+<!-- MathJax 로드 -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<script>
+  // 만약 데이터가 비동기(AJAX/Fetch)로 로드된다면, 
+  // 데이터를 화면에 뿌린 후 아래 명령어를 실행해줘야 수식이 새로 그려집니다!
+  function reloadMath() {
+    MathJax.typesetPromise();
+  }
+</script>
 </head>
 <body>
 
