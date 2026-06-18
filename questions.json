@@ -187,5 +187,47 @@
         "question": "tracking-by-detection baseline 모델들에서 아래 각 후속 방법이 이전 방법의 어떤 단점을, 어떤 아이디어로 극복했는지 설명하시오.<br><img src='lim_1.png'><br><br>1) IOU tracker vs. SORT: state prediction 과 association 방법<br>2) DeepSORT vs. SORT<br>3) Byte Track vs. 기존 방법",
         "answer": "1) IOU tracker vs. SORT: 기존 track 의 box를 Kalman filter 로 예측하고, 예측 box 와 detection box 의 IoU를 cost로 하여 Hungarian algorithm 으로 매칭함. <br><br>2) DeepSORT vs. SORT: Data association에 deep appearance (ReID) descriptor를 추가해 물체의 외형정보를 matching 에 사용함.<br><br>3) Byte Track vs. 기존 방법: 기존 방법들이 low-confidence detection box를 버려 (가려진) 객체를 놓치는 것을 막기위해, ByteTrack은 two-stage association 수행함. 먼저 high-score box를 track과 매칭하고, 남은 tracklet을 low-score box 와 매칭함[cite: 45, 46, 47].",
         "hidden": false
+    },
+{
+        "id": 28,
+        "professor": "홍승훈 교수님",
+        "question": "Vision Transformer(ViT)를 이미지 분류에 적용할 때, 이미지를 처리하는 과정에서 (1) 왜 Positional encoding이 추가되어야 하는지 설명하고, (2) 입력 패치들 외에 추가로 들어가는 Global (cls) token의 역할이 무엇인지 설명하시오.",
+        "answer": "(1) Positional encoding: Transformer의 Self-attention 연산 자체는 입력 토큰의 순서나 위치 정보를 파악하지 못하므로, 이미지를 1D 패치 시퀀스로 만들었을 때 각 패치의 공간적 위치 정보를 모델에 제공하기 위해 주기 함수나 학습 가능한 형태의 positional embedding을 더해주어야 한다.<br><br>(2) Global (cls) token: 입력 이미지 패치들과 별개로 주어지는 학습 가능한 추가 토큰으로, Transformer encoder 계층을 거치며 다른 모든 패치 토큰들과 attention을 통해 전역적(global) 문맥 정보를 집약하게 된다. 최종적으로 이 토큰의 출력 임베딩 벡터만을 MLP head에 전달하여 전체 이미지의 클래스 예측(classification)에 사용한다.",
+        "hidden": True
+    },
+    {
+        "id": 29,
+        "professor": "홍승훈 교수님",
+        "question": "Semantic segmentation을 위해 Transformer encoder 뒤에 결합하는 Decoder의 설계 방식 중, 특징 맵을 점진적으로 upsampling하는 Convolutional Decoder 방식과 대비되는 (1) Transformer decoder (Segmenter)와 (2) Hybrid decoder (MaskFormer)가 각각 최종 segmentation map을 생성하는 핵심 원리를 설명하시오.",
+        "answer": "(1) Transformer decoder (Segmenter): Encoder에서 나온 contextualized patch token들과 함께 각 클래스를 나타내는 'Learnable class tokens'를 Mask Transformer에 통과시킨다. 이후 출력된 class token과 patch token 간의 Scalar Product(내적)를 통해 Class Mask를 구하고, 이를 원래 이미지 크기로 Upsampling 및 Argmax를 취해 최종 Segmentation map을 얻는다.<br><br>(2) Hybrid decoder (MaskFormer): 모든 픽셀을 분류하는 대신, N개의 후보 객체(Object) 마스크를 먼저 예측하고 이 마스크들의 클래스를 분류하는 방식을 취한다. Transformer decoder로 N개의 Object embedding을 추출해 클래스를 예측하고, 이 임베딩을 Pixel-level module(Pixel decoder)에서 나온 Per-pixel embedding과 내적하여 N개의 Binary mask를 생성한 뒤 최종적으로 결합한다.",
+        "hidden": True
+    },
+    {
+        "id": 30,
+        "professor": "홍승훈 교수님",
+        "question": "다양한 Dense prediction task (Depth, Surface Normal, Semantic Segmentation 등)는 출력 채널 수와 의미가 각기 다르다. 이러한 다수의 task를 하나의 통합된 모델로 처리하기 위한 Universal Few-shot Learner (Task-agnostic architecture)에서 서로 다른 출력 채널 수를 가진 task들을 단일 구조로 어떻게 처리하는지(Decomposing) 설명하고, 새로운 task에 대해 어떻게 효율적으로 적응(Adaptation)하는지 설명하시오.",
+        "answer": "- 채널 처리 방식 (Decomposing): 임의의 채널 수(C_T)를 갖는 task를 여러 개의 단일 채널(Single-channel) subtask로 분해하여 처리한다. 즉, 각 채널을 독립적인 하나의 task로 취급함으로써 채널 크기와 무관하게 단일 파라미터 구조를 다양한 task에 범용적으로 적용할 수 있다.<br><br>- 효율적 적응 방식 (Adaptation): 전체 모델 파라미터를 업데이트하는 대신, Image Encoder 내에 있는 극히 일부(전체 파라미터의 0.3% 미만)인 bias parameter 같은 task-specific parameter만 fine-tuning 한다. 이를 통해 임베딩 공간 상에서 패치 간의 유사도 측정(similarity measure) 기준을 새로운 task에 맞게 변화시키며, 오버피팅 없이 빠르게 적응할 수 있다.",
+        "hidden": True
+    },
+    {
+        "id": 31,
+        "professor": "이재욱 교수님",
+        "question": "RISC-V의 ISA 명명 규칙에서 'RV64GC'가 의미하는 바를 설명하고, 기본 정수 명령어(Base Integer ISA) 인코딩의 주요 타입 중 레지스터-레지스터(register-register) 연산과 Load 메모리 접근에 각각 사용되는 타입을 쓰시오.",
+        "answer": "'RV64GC'는 64비트 정수 레지스터(RV64) 공간을 가지며 [cite: 1583], G(General Purpose = IMAFD 즉, Integer, Multiply, Atomic, Single/Double FP) 및 C(16-bit Compressed Instructions) 확장을 지원하는 RISC-V 아키텍처를 의미한다[cite: 1586, 1599, 1603]. 레지스터-레지스터 연산에는 R-type이 사용되며 [cite: 1640], Load 메모리 접근 및 immediate 연산에는 I-type이 사용된다[cite: 1648].",
+        "hidden": true
+    },
+    {
+        "id": 32,
+        "professor": "이재욱 교수님",
+        "question": "사용자 정의 SoC에 가속기를 추가할 때 사용하는 RoCC(Rocket Chip Coprocessor)와 기존 MMIO 방식의 차이점을 통신(Communication) 방식과 소프트웨어 툴체인 관점에서 비교하시오. 또한, RoCC 인터페이스의 decoupled 포트 중 프로세서 코어에서 가속기로 명령어 전체와 2개의 레지스터 값을 전달하는 포트의 이름을 쓰시오.",
+        "answer": "MMIO 방식은 메모리 맵(memory-mapped) 레지스터를 통해 주변 장치와 통신하며, 적절한 드라이버 지원이 포함된 표준 툴체인을 사용한다[cite: 1974]. 반면, RoCC 가속기는 RISC-V ISA 인코딩 공간에 예약된 사용자 정의(non-standard) 명령어와 커스텀 프로토콜을 통해 프로세서와 긴밀하게(tightly-coupled) 통신하며 [cite: 1976], 이를 지원하기 위한 커스텀 소프트웨어 툴체인이 필요하다[cite: 1977]. 코어에서 가속기로 레지스터 값과 명령어를 전달하는 포트 이름은 'cmd' 이다[cite: 1944].",
+        "hidden": true
+    },
+    {
+        "id": 33,
+        "professor": "이재욱 교수님",
+        "question": "Chipyard 프레임워크 기반 설계에서, Chisel 언어로 작성된 하드웨어가 FPGA 에뮬레이션이나 ASIC용 Verilog로 변환되기 위해 거치는 중간 표현(IR)의 이름은 무엇인가? 이 IR의 역할과, Chisel 언어의 설계 철학 중 \"무엇이 아닌지(What Chisel IS NOT)\"에 해당하는 특징 2가지를 서술하시오.",
+        "answer": "변환 과정에서 거치는 중간 표현(IR)은 FIRRTL(FIRRTL IR)이다[cite: 2199, 2256]. FIRRTL은 하드웨어 컴파일러의 LLVM처럼 동작하여 하드웨어 설명 코드를 자동으로 조작(manipulation) 및 최적화하고, 합성 가능한(synthesizable) 툴 친화적 Verilog 코드를 생성하는 역할을 한다[cite: 2184, 2185, 2324]. Chisel이 '아닌 것(NOT)'에 해당하는 2가지 특징은, Scala 코드를 곧바로 게이트 레벨로 변환하는 것(Scala-to-gates)이 아니며 [cite: 2165], C/C++와 같은 소프트웨어 코드를 하드웨어로 합성하는 HLS(High-Level Synthesis)도 아니라는 점이다[cite: 2166].",
+        "hidden": true
     }
 ]
